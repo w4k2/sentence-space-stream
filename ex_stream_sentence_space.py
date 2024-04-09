@@ -1,15 +1,17 @@
 import numpy as np
 from math import ceil
-from skmultiflow.trees import HoeffdingTree
 from strlearn.metrics import balanced_accuracy_score as bac
-from sklearn.naive_bayes import GaussianNB
 from tqdm import tqdm
-from strlearn.ensembles import KUE, ROSE, NIE
-from utils import CDS
 from strlearn.metrics import balanced_accuracy_score as bac, recall, precision, specificity, f1_score, geometric_mean_score_1, geometric_mean_score_2
 from sklearn.metrics import recall_score, precision_score, balanced_accuracy_score
 from sentence_transformers import SentenceTransformer
 import matplotlib.pyplot as plt
+from cv2 import resize
+from torchvision.models import resnet18, ResNet18_Weights
+from torch.utils.data import DataLoader, TensorDataset
+import torch
+import torch.nn as nn
+import torch.optim as optim
 
 
 X = np.load("fakeddit_stream/fakeddit_posts.npy", allow_pickle=True)
@@ -27,58 +29,96 @@ y_2[y_2==-1] = 1
 
 chunk_size = 250
 # All chunks
-n_chunks = ceil(stream.shape[0]/chunk_size)
+# n_chunks = ceil(stream.shape[0]/chunk_size)
 # To always have both classes
 n_chunks = 2727
-n_estimators = 10
+# n_chunks = 20
 
 metrics=(recall, recall_score, precision, precision_score, specificity, f1_score, geometric_mean_score_1, geometric_mean_score_2, bac, balanced_accuracy_score)
-# clf = HoeffdingTree(split_criterion="hellinger")
-# clf = GaussianNB()
-methods = [
-        HoeffdingTree(split_criterion="hellinger"),
-        CDS(HoeffdingTree(split_criterion="hellinger"), n_estimators),
-        NIE(HoeffdingTree(split_criterion="hellinger"), n_estimators),
-        KUE(HoeffdingTree(split_criterion="hellinger"), n_estimators),
-        ROSE(HoeffdingTree(split_criterion="hellinger"), n_estimators),
-    ]
+
+"""
+Model
+"""
+num_classes = 2
+batch_size = 8
+num_epochs = 1
+# weights = ResNet18_Weights.IMAGENET1K_V1
+weights = None
+
+model = resnet18(weights=weights)
+num_ftrs = model.fc.in_features
+model.fc = nn.Linear(num_ftrs, num_classes)
+
+device = torch.device("mps")
+model = model.to(device)
+
+optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+# imb_weight = torch.from_numpy(np.array(imb_weights)).float().to(device)
+
+criterion = nn.CrossEntropyLoss()
+
 
 # METHODS x CHUNKS x METRICS
-scores = np.zeros((5, n_chunks, 10))
+transformer = SentenceTransformer('all-MiniLM-L6-v2', device=device).to(device)
+results = []
 for chunk_id in tqdm(range(n_chunks)):
     chunk_X = stream[chunk_id*chunk_size:chunk_id*chunk_size+chunk_size]
     chunk_y = y_2[chunk_id*chunk_size:chunk_id*chunk_size+chunk_size]
     
-    print("EMBEDDINGS")
-    embeddings = []
-    model = SentenceTransformer('all-MiniLM-L6-v2', device="mps").to("mps")
-    print(model.device)
-    for text_id, text in enumerate(tqdm(chunk_X[26:])):
+    chunk_images = []
+    for text_id, text in enumerate(tqdm(chunk_X, disable=True)):
         words = text.split(" ")
-        if len(words) != 1:
-            embeddings.append(model.encode(words))
-            
-        plt.imshow(model.encode(words))
-        plt.savefig("bar.png")
-        exit()
-            
-            
-
-    embeddings = np.array(embeddings, dtype=object)
-    print(embeddings[0], embeddings[0].shape)
+        img = resize(transformer.encode(words), (384, 200))
+        
+        rgb = np.stack((img, img, img), axis=0)
+        
+        chunk_images.append(rgb)
+        # print(text)
+        # plt.imshow(rgb[:, :, 0])
+        # plt.title(text)
+        # plt.tight_layout()
+        # plt.savefig("bar.png")
+        # exit()
+        
+    chunk_images = np.array(chunk_images)
     
-    exit()
+    chunk_X = torch.from_numpy(chunk_images).float()
+    chunk_y = torch.from_numpy(chunk_y).long()
     
-    for method_id, method in enumerate(methods):
-        if chunk_id == 0:
-            method.fit(preproc_X, chunk_y)
-        else:
-            pred = method.predict(preproc_X)
-            
-            for metric_id, metric in enumerate(metrics):
-                score = metric(chunk_y, pred)
-                scores[method_id, chunk_id, metric_id] = score
-            
-            method.partial_fit(preproc_X, chunk_y)
+    stml_dataset = TensorDataset(chunk_X, chunk_y)
+    data_loader = DataLoader(stml_dataset, batch_size=batch_size, shuffle=True)
+    
+    if chunk_id==0:
+        model.train()
+        for epoch in range(num_epochs):
+            for i, batch in enumerate(data_loader, 0):
+                inputs, labels = batch
 
-np.save("results/scores_embeddings", scores)
+                optimizer.zero_grad()
+
+                outputs = model(inputs.to(device))
+                loss = criterion(outputs.to(device), labels.to(device))
+                loss.backward()
+                optimizer.step()
+                
+    else:
+        model.eval()
+        logits = model(chunk_X.to(device))
+        probs = torch.nn.functional.softmax(logits, dim=1).cpu().detach().numpy()
+        preds = np.argmax(probs, 1)
+        scores = [metric(chunk_y.numpy(), preds) for metric in metrics]
+        results.append(scores)
+        
+        model.train()
+        for epoch in range(num_epochs):
+            for i, batch in enumerate(data_loader, 0):
+                inputs, labels = batch
+
+                optimizer.zero_grad()
+
+                outputs = model(inputs.to(device))
+                loss = criterion(outputs.to(device), labels.to(device))
+                loss.backward()
+                optimizer.step()
+results = np.array(results)
+np.save("results/scores_sentence_space", results)
