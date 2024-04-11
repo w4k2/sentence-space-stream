@@ -49,6 +49,8 @@ methods = [
 model = SentenceTransformer('all-MiniLM-L6-v2', device="mps").to("mps")
 
 # METHODS x CHUNKS x METRICS
+pca = PCA(100, random_state=1410)
+
 scores = np.zeros((5, n_chunks, 10))
 for chunk_id in tqdm(range(n_chunks)):
     chunk_X = stream[chunk_id*chunk_size:chunk_id*chunk_size+chunk_size]
@@ -60,14 +62,13 @@ for chunk_id in tqdm(range(n_chunks)):
         embeddings.append(model.encode(text))
 
     embeddings = np.array(embeddings)
-    # ~ 70% explained variance
-    pca = PCA(70, random_state=1410)
-    preproc_X = pca.fit_transform(embeddings)
     
     for method_id, method in enumerate(methods):
         if chunk_id == 0:
+            preproc_X = pca.fit_transform(embeddings)
             method.fit(preproc_X, chunk_y)
         else:
+            preproc_X = pca.transform(embeddings)
             try:
                 pred = method.predict(preproc_X)
                 
@@ -80,4 +81,4 @@ for chunk_id in tqdm(range(n_chunks)):
                 print("SCIKIT-MULTIFLOW SIE ZJEBAL! THANKS FOR NOTHING, BIFET!")
                 scores[method_id, chunk_id, metric_id] = np.nan
 
-np.save("results/scores_embeddings", scores)
+np.save("results/scores_MiniLM", scores)

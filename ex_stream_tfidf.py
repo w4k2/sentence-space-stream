@@ -9,6 +9,7 @@ from strlearn.ensembles import KUE, ROSE, NIE
 from utils import CDS
 from strlearn.metrics import balanced_accuracy_score as bac, recall, precision, specificity, f1_score, geometric_mean_score_1, geometric_mean_score_2
 from sklearn.metrics import recall_score, precision_score, balanced_accuracy_score
+from sklearn.decomposition import PCA
 
 
 X = np.load("fakeddit_stream/fakeddit_posts.npy", allow_pickle=True)
@@ -31,7 +32,6 @@ n_chunks = ceil(stream.shape[0]/chunk_size)
 n_chunks = 2727
 n_estimators = 10
 
-tfidf = TfidfVectorizer(max_features=10, ngram_range=(1,1))
 metrics=(recall, recall_score, precision, precision_score, specificity, f1_score, geometric_mean_score_1, geometric_mean_score_2, bac, balanced_accuracy_score)
 
 methods = [
@@ -43,12 +43,15 @@ methods = [
     ]
 
 # METHODS x CHUNKS x METRICS
+tfidf = TfidfVectorizer(max_features=100, ngram_range=(1,2))
+tfidf.fit(stream, y_2)
+
 scores = np.zeros((5, n_chunks, 10))
 for chunk_id in tqdm(range(n_chunks)):
     chunk_X = stream[chunk_id*chunk_size:chunk_id*chunk_size+chunk_size]
     chunk_y = y_2[chunk_id*chunk_size:chunk_id*chunk_size+chunk_size]
     
-    preproc_X = tfidf.fit_transform(chunk_X).A
+    preproc_X = tfidf.transform(chunk_X).A
     
     for method_id, method in enumerate(methods):
         if chunk_id == 0:
