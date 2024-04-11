@@ -6,15 +6,21 @@ import matplotlib
 
 matplotlib.rcParams.update({'font.size': 16, "font.family" : "monospace"})
 
+
+X = np.load("fakeddit_stream/fakeddit_posts.npy", allow_pickle=True)
+chunk_size = 250
+# n_chunks = ceil(stream.shape[0]/chunk_size)
+n_chunks = 2727
+
 score_files = ["tfidf", "MiniLM"]
 titles = ["TF-IDF | max_features=100, ngram_range=(1,2)", "EMBEDDINGS | PCA to 100 components"]
 
 for file_id, file in enumerate(score_files):
 
-    scores = np.load("results/scores_%s.npy" % file)
-    scores_sentence_space = np.load("results/scores_sentence_space.npy")
+    scores = np.load("results/scores_%s_2c.npy" % file)
+    scores_sentence_space = np.load("results/scores_sentence_space_2c.npy")
 
-    n_chunks = 2727
+    
 
     metrics=["recall", "precision", "specificity", "f1_score", "geometric_mean_score_1", "geometric_mean_score_2", "bac"]
 

@@ -15,24 +15,24 @@ import torch.optim as optim
 
 
 X = np.load("fakeddit_stream/fakeddit_posts.npy", allow_pickle=True)
-y = np.load("fakeddit_stream/fakeddit_posts_y.npy")
+bias = np.load("fakeddit_stream/fakeddit_posts_y.npy")
+# How many classes?
+bias_id = 0
 print(X.shape)
-print(y.shape)
+print(bias.shape)
 
 # Only titles, without timestamp
 # Binary problem
 stream = X[:, 0]
-y_2 = y[:, 0]
-y_2[y_2==0] = -1
-y_2[y_2==1] = 0
-y_2[y_2==-1] = 1
+y = np.array([1,0])[bias[:,0]] if 0 == 0 else bias[:,0]
 
 chunk_size = 250
 # All chunks
-# n_chunks = ceil(stream.shape[0]/chunk_size)
-# To always have both classes
-n_chunks = 2727
-# n_chunks = 20
+n_chunks = ceil(stream.shape[0]/chunk_size)
+# Select dummies
+classes = np.unique(y)
+n_classes = len(classes)
+dummies = stream[[np.where(y==label)[0][0] for label in classes]]
 
 metrics=(recall, recall_score, precision, precision_score, specificity, f1_score, geometric_mean_score_1, geometric_mean_score_2, bac, balanced_accuracy_score)
 
@@ -42,8 +42,9 @@ Model
 num_classes = 2
 batch_size = 8
 num_epochs = 1
-# weights = ResNet18_Weights.IMAGENET1K_V1
-weights = None
+# To transfer or not to transfer?
+weights = ResNet18_Weights.IMAGENET1K_V1
+# weights = None
 
 model = resnet18(weights=weights)
 num_ftrs = model.fc.in_features
@@ -63,7 +64,11 @@ transformer = SentenceTransformer('all-MiniLM-L6-v2', device=device).to(device)
 results = []
 for chunk_id in tqdm(range(n_chunks)):
     chunk_X = stream[chunk_id*chunk_size:chunk_id*chunk_size+chunk_size]
-    chunk_y = y_2[chunk_id*chunk_size:chunk_id*chunk_size+chunk_size]
+    chunk_y = y[chunk_id*chunk_size:chunk_id*chunk_size+chunk_size]
+    
+    if len(np.unique(chunk_y)) != n_classes:
+        chunk_X[:n_classes] = dummies
+        chunk_y[:n_classes] = classes
     
     chunk_images = []
     for text_id, text in enumerate(tqdm(chunk_X, disable=True)):
@@ -121,4 +126,4 @@ for chunk_id in tqdm(range(n_chunks)):
                 loss.backward()
                 optimizer.step()
 results = np.array(results)
-np.save("results/scores_sentence_space", results)
+np.save("results/scores_sentence_space_2c_transfer", results)
