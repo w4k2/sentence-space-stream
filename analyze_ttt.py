@@ -12,14 +12,15 @@ chunk_size = 250
 # n_chunks = ceil(stream.shape[0]/chunk_size)
 n_chunks = 2727
 
-score_files = ["tfidf", "MiniLM"]
-titles = ["TF-IDF | max_features=100, ngram_range=(1,2)", "EMBEDDINGS | PCA to 100 components"]
+score_files = ["tfidf", "MiniLM", "glove"]
+titles = ["TF-IDF | max_features=100, ngram_range=(1,2)", "MiniLM | PCA to 100 components", "GloVe | 300 features without PCA"]
 
 for file_id, file in enumerate(score_files):
 
     scores = np.load("results/scores_%s_2c.npy" % file)
     scores_sentence_space = np.load("results/scores_sentence_space_2c.npy")
-
+    scores_sentence_space_transfer = np.load("results/scores_sentence_space_2c_transfer.npy")
+    scores_sentence_space_glove = np.load("results/scores_sentence_space_glove.npy")
     
 
     metrics=["recall", "precision", "specificity", "f1_score", "geometric_mean_score_1", "geometric_mean_score_2", "bac"]
@@ -32,16 +33,18 @@ for file_id, file in enumerate(score_files):
             "ROSE",
         ]
 
-    colors = ['silver', 'darkorange', 'seagreen', 'darkorchid', 'dodgerblue', 'red']
-    lws = [1.5, 1.5, 1.5 ,1.5 ,1.5 ,2]
-    lss = ["-", "-", "-", "-", "-", "-"]
+    colors = ['silver', 'darkorange', 'seagreen', 'darkorchid', 'dodgerblue', 'red', 'blue']
+    lws = [1.5, 1.5, 1.5 ,1.5 ,1.5 ,1.5 ,1.5]
+    lss = ["-", "-", "-", "-", "-", "-", "-"]
 
     fig, ax = plt.subplots(1, 1, figsize=(13, 10))
 
     for method_id, method in enumerate(methods):
         ax.plot(gaussian_filter1d(scores[method_id, :, 8], 9), label=method, ls=lss[method_id], c=colors[method_id], lw=lws[method_id])
 
-    ax.plot(gaussian_filter1d(scores_sentence_space[:, 8], 9), label="SS", ls=lss[5], c=colors[5], lw=lws[5])
+    ax.plot(gaussian_filter1d(scores_sentence_space[:, 8], 9), label="SS-MiniLM: %.3f" % np.mean(scores_sentence_space[:, 8]), ls=lss[5], c=colors[5], lw=lws[5])
+    ax.plot(gaussian_filter1d(scores_sentence_space_transfer[:, 8], 9), label="SS-MiniLM Transfer: %.3f" % np.mean(scores_sentence_space_transfer[:, 8]), ls="-", c="green", lw=2)
+    ax.plot(gaussian_filter1d(scores_sentence_space_glove[:, 8], 9), label="SS-Glove: %.3f" % np.mean(scores_sentence_space_glove[:, 8]), ls=lss[6], c=colors[6], lw=lws[6])
     ax.set_xlim(0, n_chunks)
     ax.grid(ls=":", c=(0.7, 0.7, 0.7))
     ax.spines[['right', 'top']].set_visible(False)
@@ -50,7 +53,7 @@ for file_id, file in enumerate(score_files):
     ax.set_ylabel("BAC")
     ax.set_title(titles[file_id])
 
-    ax.legend(ncol=6, frameon=False, loc="upper center")
+    ax.legend(ncol=4, frameon=False, loc="upper center")
 
     plt.tight_layout()
-    plt.savefig("figures/%s.png" % file)
+    plt.savefig("figures/%s_.png" % file)
