@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader, TensorDataset
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from gensim.models import Word2Vec
+from gensim import downloader
 
 X = np.load("fakeddit_stream/fakeddit_posts.npy", allow_pickle=True)
 bias = np.load("fakeddit_stream/fakeddit_posts_y.npy")
@@ -21,10 +21,6 @@ bias = np.load("fakeddit_stream/fakeddit_posts_y.npy")
 bias_id = 0
 print(X.shape)
 print(bias.shape)
-
-print(np.median(X))
-
-exit()
 
 # Only titles, without timestamp
 # Binary problem
@@ -64,8 +60,8 @@ optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
 criterion = nn.CrossEntropyLoss()
 
-w2v_model = Word2Vec(vector_size=100, window=5, min_count=1, workers=-1)
-is_vocab = False
+vectors = downloader.load('word2vec-google-news-300')
+# print(vectors)
 
 # METHODS x CHUNKS x METRICS
 # transformer = SentenceTransformer('all-MiniLM-L6-v2', device=device).to(device)
@@ -77,25 +73,18 @@ for chunk_id in tqdm(range(n_chunks)):
     if len(np.unique(chunk_y)) != n_classes:
         chunk_X[:n_classes] = dummies
         chunk_y[:n_classes] = classes
-
-    if not is_vocab:
-        w2v_model.build_vocab(chunk_X, update=True)
-    
-    w2v_model.train()
     
     chunk_images = []
     for text_id, text in enumerate(tqdm(chunk_X, disable=True)):
 
         words = text.split(" ")
 
-        wordvecs = np.zeros((100,len(words)))
+        wordvecs = np.zeros((300,len(words)))
         for idx, word in enumerate(words):
             try:
                 wordvecs[:, idx] = vectors[word]
             except KeyError:
                 pass
-
-        exit()
 
         img = resize(wordvecs, (300, 200))
         
@@ -150,4 +139,4 @@ for chunk_id in tqdm(range(n_chunks)):
                 loss.backward()
                 optimizer.step()
 results = np.array(results)
-np.save("results/scores_sentence_space_glove", results)
+np.save("results/scores_sentence_space_w2v_pre", results)

@@ -50,10 +50,10 @@ methods = [
     ]
 
 # model = SentenceTransformer('all-MiniLM-L6-v2', device="mps").to("mps")
-vectors = downloader.load('glove-wiki-gigaword-300')
+vectors = downloader.load('word2vec-google-news-300')
 
 # METHODS x CHUNKS x METRICS
-# pca = PCA(100, random_state=1410)
+pca = PCA(100, random_state=1410)
 
 scores = np.zeros((5, n_chunks, 10))
 for chunk_id in tqdm(range(n_chunks)):
@@ -81,19 +81,19 @@ for chunk_id in tqdm(range(n_chunks)):
     
     for method_id, method in enumerate(methods):
         if chunk_id == 0:
-            # preproc_X = pca.fit_transform(embeddings)
-            method.fit(embeddings, chunk_y)
+            preproc_X = pca.fit_transform(embeddings)
+            method.fit(preproc_X, chunk_y)
         else:
-            # preproc_X = pca.transform(embeddings)
+            preproc_X = pca.transform(embeddings)
             try:
-                pred = method.predict(embeddings)
+                pred = method.predict(preproc_X)
                 
                 for metric_id, metric in enumerate(metrics):
                     score = metric(chunk_y, pred)
                     scores[method_id, chunk_id, metric_id] = score
                 
-                method.partial_fit(embeddings, chunk_y)
+                method.partial_fit(preproc_X, chunk_y)
             except:
                 scores[method_id, chunk_id, metric_id] = np.nan
 
-np.save("results/scores_glove_nopca", scores)
+np.save("results/scores_w2v_pre_pca100", scores)

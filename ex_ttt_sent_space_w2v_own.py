@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader, TensorDataset
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from gensim import downloader
+from gensim.models import Word2Vec
 
 X = np.load("fakeddit_stream/fakeddit_posts.npy", allow_pickle=True)
 bias = np.load("fakeddit_stream/fakeddit_posts_y.npy")
@@ -21,6 +21,7 @@ bias = np.load("fakeddit_stream/fakeddit_posts_y.npy")
 bias_id = 0
 print(X.shape)
 print(bias.shape)
+
 
 # Only titles, without timestamp
 # Binary problem
@@ -44,8 +45,8 @@ num_classes = 2
 batch_size = 8
 num_epochs = 1
 # To transfer or not to transfer?
-# weights = ResNet18_Weights.IMAGENET1K_V1
-weights = None
+weights = ResNet18_Weights.IMAGENET1K_V1
+# weights = None
 
 
 model = resnet18(weights=weights)
@@ -60,8 +61,8 @@ optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
 criterion = nn.CrossEntropyLoss()
 
-vectors = downloader.load('glove-wiki-gigaword-300')
-# print(vectors)
+w2v_model = Word2Vec(vector_size=300, window=5, min_count=1, workers=-1)
+is_vocab = False
 
 # METHODS x CHUNKS x METRICS
 # transformer = SentenceTransformer('all-MiniLM-L6-v2', device=device).to(device)
@@ -73,6 +74,20 @@ for chunk_id in tqdm(range(n_chunks)):
     if len(np.unique(chunk_y)) != n_classes:
         chunk_X[:n_classes] = dummies
         chunk_y[:n_classes] = classes
+
+    words = []
+    for text in chunk_X:
+        words.append(text.split(" "))
+
+    if not is_vocab:
+        w2v_model.build_vocab(words)
+        is_vocab = True
+    else:
+        w2v_model.build_vocab(words, update=True)
+    
+    w2v_model.train(words, epochs=5, total_examples=w2v_model.corpus_count)
+
+
     
     chunk_images = []
     for text_id, text in enumerate(tqdm(chunk_X, disable=True)):
@@ -82,21 +97,14 @@ for chunk_id in tqdm(range(n_chunks)):
         wordvecs = np.zeros((300,len(words)))
         for idx, word in enumerate(words):
             try:
-                wordvecs[:, idx] = vectors[word]
-            except KeyError:
+                wordvecs[:, idx] = w2v_model.wv[word]
+            except KeyError as e:
                 pass
 
         img = resize(wordvecs, (300, 200))
         
         rgb = np.stack((img, img, img), axis=0)
         chunk_images.append(rgb)
-
-        # print(text)
-        # plt.imshow(rgb[:, :, 0])
-        # plt.title(text)
-        # plt.tight_layout()
-        # plt.savefig("bar.png")
-        # exit()
 
     chunk_images = np.array(chunk_images)    
     
@@ -139,4 +147,4 @@ for chunk_id in tqdm(range(n_chunks)):
                 loss.backward()
                 optimizer.step()
 results = np.array(results)
-np.save("results/scores_sentence_space_glove_h200_notransfer", results)
+np.save("results/scores_sentence_space_w2v_own", results)
