@@ -28,7 +28,7 @@ print(bias.shape)
 # Only titles, without timestamp
 # Binary problem
 stream = X[:, 0]
-y = np.array([1,0])[bias[:,0]] if 0 == 0 else bias[:,0]
+y = np.array([1,0])[bias[:,bias_id]] if bias_id == 0 else bias[:,bias_id]
 
 chunk_size = 250
 # All chunks

@@ -7,7 +7,7 @@ from scipy.ndimage import gaussian_filter1d
 
 matplotlib.rcParams.update({'font.size': 16, "font.family" : "monospace"})
 
-scores_sentence_space_glove = np.load("results/scores_sentence_space_glove_transfer.npy")
+scores_sentence_space_glove = np.load("results/scores_sentence_space_glove_imgfixed.npy")
 
 ref_extractors = ["Glove", "W2V", "MiniLM", "TF-IDF"]
 ref_extractors_files = ["scores_glove_pca100_2c.npy", "scores_w2v_pre_pca100.npy", "scores_MiniLM_2c.npy", "scores_tfidf_2c.npy"]

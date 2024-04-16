@@ -19,14 +19,15 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 X = np.load("fakeddit_stream/fakeddit_posts.npy", allow_pickle=True)
 bias = np.load("fakeddit_stream/fakeddit_posts_y.npy")
 # How many classes?
-bias_id = 0
+bias_id = 1
 print(X.shape)
 print(bias.shape)
 
 # Only titles, without timestamp
 # Binary problem
 stream = X[:, 0]
-y = np.array([1,0])[bias[:,0]] if 0 == 0 else bias[:,0]
+y = np.array([1,0])[bias[:,bias_id]] if bias_id == 0 else bias[:,bias_id]
+print(np.unique(y, return_counts=True))
 
 chunk_size = 250
 # All chunks

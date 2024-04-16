@@ -25,7 +25,7 @@ print(bias.shape)
 # Only titles, without timestamp
 # Binary problem
 stream = X[:, 0]
-y = np.array([1,0])[bias[:,0]] if 0 == 0 else bias[:,0]
+y = np.array([1,0])[bias[:,bias_id]] if bias_id == 0 else bias[:,bias_id]
 
 chunk_size = 250
 # All chunks
@@ -79,10 +79,12 @@ for chunk_id in tqdm(range(n_chunks)):
 
         words = text.split(" ")
 
-        wordvecs = np.zeros((300,len(words)))
+        # wordvecs = np.zeros((300,len(words)))
+        wordvecs = np.zeros((len(words), 300))
         for idx, word in enumerate(words):
             try:
-                wordvecs[:, idx] = vectors[word]
+                # wordvecs[:, idx] = vectors[word]
+                wordvecs[idx] = vectors[word]
             except KeyError:
                 pass
 
@@ -139,4 +141,4 @@ for chunk_id in tqdm(range(n_chunks)):
                 loss.backward()
                 optimizer.step()
 results = np.array(results)
-np.save("results/scores_sentence_space_w2v_pre", results)
+np.save("results/scores_sentence_space_w2v_pre_imgfixed", results)

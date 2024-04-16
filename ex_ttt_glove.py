@@ -21,14 +21,14 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 X = np.load("fakeddit_stream/fakeddit_posts.npy", allow_pickle=True)
 bias = np.load("fakeddit_stream/fakeddit_posts_y.npy")
 # How many classes?
-bias_id = 0
+bias_id = 1
 print(X.shape)
 print(bias.shape)
 
 # Only titles, without timestamp
 # Binary problem
 stream = X[:, 0]
-y = np.array([1,0])[bias[:,0]] if 0 == 0 else bias[:,0]
+y = np.array([1,0])[bias[:,bias_id]] if bias_id == 0 else bias[:,bias_id]
 
 chunk_size = 250
 # All chunks
@@ -44,7 +44,7 @@ n_estimators = 10
 methods = [
         HoeffdingTree(split_criterion="hellinger"),
         CDS(HoeffdingTree(split_criterion="hellinger"), n_estimators),
-        NIE(HoeffdingTree(split_criterion="hellinger"), n_estimators),
+        # NIE(HoeffdingTree(split_criterion="hellinger"), n_estimators),
         KUE(HoeffdingTree(split_criterion="hellinger"), n_estimators),
         ROSE(HoeffdingTree(split_criterion="hellinger"), n_estimators),
     ]
@@ -53,7 +53,7 @@ methods = [
 vectors = downloader.load('glove-wiki-gigaword-300')
 
 # METHODS x CHUNKS x METRICS
-# pca = PCA(100, random_state=1410)
+pca = PCA(100, random_state=1410)
 
 scores = np.zeros((5, n_chunks, 10))
 for chunk_id in tqdm(range(n_chunks)):
@@ -68,32 +68,34 @@ for chunk_id in tqdm(range(n_chunks)):
     for text_id, text in enumerate(chunk_X):
         words = text.split(" ")
 
-        wordvecs = np.zeros((300,len(words)))
+        # wordvecs = np.zeros((300,len(words)))
+        wordvecs = np.zeros((len(words), 300))
         for idx, word in enumerate(words):
             try:
-                wordvecs[:, idx] = vectors[word]
+                # wordvecs[:, idx] = vectors[word]
+                wordvecs[idx] = vectors[word]
             except KeyError:
                 pass
-        embeddings.append(np.mean(wordvecs, axis=1))
+        embeddings.append(np.mean(wordvecs, axis=0))
 
     embeddings = np.array(embeddings)
 
     
     for method_id, method in enumerate(methods):
         if chunk_id == 0:
-            # preproc_X = pca.fit_transform(embeddings)
-            method.fit(embeddings, chunk_y)
+            preproc_X = pca.fit_transform(embeddings)
+            method.fit(preproc_X, chunk_y)
         else:
-            # preproc_X = pca.transform(embeddings)
+            preproc_X = pca.transform(embeddings)
             try:
-                pred = method.predict(embeddings)
+                pred = method.predict(preproc_X)
                 
                 for metric_id, metric in enumerate(metrics):
                     score = metric(chunk_y, pred)
                     scores[method_id, chunk_id, metric_id] = score
                 
-                method.partial_fit(embeddings, chunk_y)
+                method.partial_fit(preproc_X, chunk_y)
             except:
                 scores[method_id, chunk_id, metric_id] = np.nan
 
-np.save("results/scores_glove_nopca", scores)
+np.save("results/scores_glove_3c", scores)

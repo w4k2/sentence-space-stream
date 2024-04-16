@@ -11,11 +11,10 @@ matplotlib.rcParams.update({'font.size': 16, "font.family" : "monospace"})
 X = np.load("fakeddit_stream/fakeddit_posts.npy", allow_pickle=True)
 stream = X[:, 0]
 
-scores_sentence_space_glove_h50 = np.load("results/scores_sentence_space_glove_h50.npy")
-scores_sentence_space_glove_h100 = np.load("results/scores_sentence_space_glove_h100.npy")
-scores_sentence_space_glove = np.load("results/scores_sentence_space_glove_transfer.npy")
-
-scores_sentence_space_glove_notransfer = np.load("results/scores_sentence_space_glove_notransfer.npy")
+scores_sentence_space_glove_h50 = np.load("results/scores_sentence_space_glove_imgfixed_50.npy")
+scores_sentence_space_glove_h100 = np.load("results/scores_sentence_space_glove_imgfixed_100.npy")
+scores_sentence_space_glove = np.load("results/scores_sentence_space_glove_imgfixed.npy")
+scores_sentence_space_glove_notransfer = np.load("results/scores_sentence_space_glove_imgfixed_200_notransfer.npy")
 
 lengths = []
 for i in tqdm(stream):

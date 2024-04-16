@@ -24,7 +24,7 @@ print(bias.shape)
 # Only titles, without timestamp
 # Binary problem
 stream = X[:, 0]
-y = np.array([1,0])[bias[:,0]] if 0 == 0 else bias[:,0]
+y = np.array([1,0])[bias[:,bias_id]] if bias_id == 0 else bias[:,bias_id]
 
 chunk_size = 250
 # All chunks
@@ -74,7 +74,6 @@ for chunk_id in tqdm(range(n_chunks)):
     for text_id, text in enumerate(tqdm(chunk_X, disable=True)):
         words = text.split(" ")
         img = resize(transformer.encode(words), (384, 200))
-        
         rgb = np.stack((img, img, img), axis=0)
         
         chunk_images.append(rgb)
