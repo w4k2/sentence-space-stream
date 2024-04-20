@@ -45,6 +45,9 @@ for extractor_id, extractor in enumerate(ref_extractors):
     ax[extractor_id].set_title(extractor)
 
     ax[extractor_id].legend(ncol=1, frameon=False, loc="upper center")
-
+    
+    # if extractor == "MiniLM":
+    #     mlp = np.load("results/scores_MiniLM_MLP.npy")
+    #     ax[extractor_id].plot(gaussian_filter1d(mlp[0, :, 9], 9), c="black", label="MLP | Mean BAC: %.3f" % np.mean(mlp[0, :, 9]))
     plt.tight_layout()
     plt.savefig("figures/3_comparison.png", dpi=200)
