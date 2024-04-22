@@ -4,7 +4,7 @@ import matplotlib
 from tabulate import tabulate
 
 
-matplotlib.rcParams.update({'font.size': 16, "font.family" : "monospace"})
+# matplotlib.rcParams.update({'font.size': 16, "font.family" : "monospace"})
 
 # CHUNKS x METRICS
 scores_sentence_space_glove = np.load("results/scores_sentence_space_glove_imgfixed.npy")
@@ -35,7 +35,7 @@ metrics=["recall", "precision", "specificity", "f1_score", "gmean_1", "gmean_2",
 mean_scores = np.concatenate((mean_scores, mean_scores[:, :1]), axis=1)
 
 label_loc = np.linspace(start=0, stop=2 * np.pi, num=len(metrics)+1)
-plt.figure(figsize=(7, 7))
+plt.figure(figsize=(6, 6))
 ax = plt.subplot(polar=True)
 
 for method_id, method in enumerate(methods):
@@ -43,6 +43,7 @@ for method_id, method in enumerate(methods):
     m = mean_scores[method_id]
     # s = std_drift_scores[method_id]
     plt.plot(label_loc, m, label=method, c=colors[method_id], lw=lws[method_id], ls=lss[method_id])
+    plt.fill_between(label_loc, m, m*0, color=colors[method_id], lw=lws[method_id], ls=lss[method_id], alpha=.05)
     # plt.fill_between(label_loc, m-s, m+s, color=colors[method_id], alpha=0.2)
 
 ax = plt.gca()
@@ -55,7 +56,7 @@ plt.ylim(0,1)
 
 gpoints = np.linspace(0,1,6)
 plt.gca().set_yticks(gpoints)
-plt.legend(loc=(0.9, -0.15), frameon=False, fontsize=15)
+plt.legend(loc=(0.9, -0.1), frameon=False)
 
 ax.grid(lw=0)
 ax.set_xticks(label_loc[:-1])
@@ -81,7 +82,9 @@ step = np.pi*1.9/(len(metrics)-1)
 for llo, lla in zip(label_loc*step, metrics):
      a = np.rad2deg(llo+np.pi/2) if llo > np.pi else np.rad2deg(llo-np.pi/2)
     #  print(a)
-     ax.text(llo, 1.05, lla, rotation=a, ha='center', va='center',weight="bold")
+     ax.text(llo, 1.05, lla, rotation=a, ha='center', va='center')
 
-plt.title("Mean metric values", fontsize=17, x=0.5, y=1.07)
+plt.tight_layout()
+# plt.title("Mean metric values", fontsize=17, x=0.5, y=1.07)
 plt.savefig("figures/4_radar.png", dpi=200)
+plt.savefig('foo.png')
