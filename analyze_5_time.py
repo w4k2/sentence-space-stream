@@ -46,4 +46,4 @@ ax[3].legend(frameon=False)
 ax[3].grid(ls=":", c=(0.7, 0.7, 0.7))
 
 plt.tight_layout()
-plt.savefig("figures/4_time.png", dpi=200)
+plt.savefig("figures/5_time.png", dpi=200)
