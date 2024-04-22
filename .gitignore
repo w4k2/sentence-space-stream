@@ -1,3 +1,2 @@
 .DS_Store
 __pycache__
-results/embeddings_ref_minilm.npy
