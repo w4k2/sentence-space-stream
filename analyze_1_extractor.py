@@ -14,7 +14,7 @@ scores_sentence_space_w2v_pre = np.load("results/scores_sentence_space_w2v_pre_i
 fig, ax = plt.subplots(1, 1, figsize=(8, 8/1.618))
 
 labels = [
-    "[~%.3f] GSS" % np.mean(scores_sentence_space_glove[:, 9]),
+    "[~%.3f] GloVe" % np.mean(scores_sentence_space_glove[:, 9]),
     "[~%.3f] MiniLM" % np.mean(scores_sentence_space_minilm[:, 9]),
     "[~%.3f] W2V Pretrained" % np.mean(scores_sentence_space_w2v_pre[:, 9]),
     "[~%.3f] W2V Partial Fit" % np.mean(scores_sentence_space_w2v_own[:, 9])
@@ -27,12 +27,13 @@ ax.plot(gaussian_filter1d(scores_sentence_space_w2v_own[:, 9], 20), c="blue", la
 ax.grid(ls=":", c=(0.7, 0.7, 0.7))
 ax.spines[['right', 'top']].set_visible(False)
 ax.set_xlabel("number of processed chunks")
-ax.set_ylabel("balanced accuracy score")
+ax.set_ylabel("BAC")
 ax.set_ylim(.5, 1.)
 ax.set_xlim(0, 2500)
-ax.set_title("Review of extraction methods")
+ax.set_title("Review of extraction methods for SSS")
 ax.legend(frameon=False, ncol=1)
 
 plt.tight_layout()
 plt.savefig("figures/1_extractor.png", dpi=200)
+plt.savefig("figures/1_extractor.eps", dpi=200)
 plt.savefig('foo.png')

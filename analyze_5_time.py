@@ -56,4 +56,5 @@ for aa in ax.ravel():
 
 plt.tight_layout()
 plt.savefig("figures/5_time.png", dpi=200)
+plt.savefig("figures/5_time.eps", dpi=200)
 plt.savefig('foo.png')

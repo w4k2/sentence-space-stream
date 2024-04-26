@@ -38,10 +38,10 @@ ax[2].plot(gaussian_filter1d(scores_sentence_space_glove_notransfer[:, 9], 20, m
 ax[2].grid(ls=":", c=(0.7, 0.7, 0.7))
 ax[2].spines[['right', 'top']].set_visible(False)
 ax[2].set_xlabel("number of processed chunks")
-ax[2].set_ylabel("balanced accuracy score")
+ax[2].set_ylabel("BAC")
 ax[2].set_ylim(.5, 1.)
 ax[2].set_xlim(0, 2500)
-ax[2].set_title("Trasfer learning ablation")
+ax[2].set_title("Transfer learning ablation")
 ax[2].legend(frameon=False, ncol=1)
 
 # ax[0].bar(bins, counts, color="k")
@@ -60,9 +60,9 @@ ax[0].text(47, .01, "~0.9971% of the dataset", c="red", rotation=90, fontsize=12
 ax[0].set_title("Image size distribution")
 
 labels = [
-    "[~%.3f] GSS 300x50" % np.mean(scores_sentence_space_glove_h50[:, 9]),
-    "[~%.3f] GSS 300x100" % np.mean(scores_sentence_space_glove_h100[:, 9]),
-    "[~%.3f] GSS 300x200" % np.mean(scores_sentence_space_glove[:, 9])
+    "[~%.3f] SSS 50x300" % np.mean(scores_sentence_space_glove_h50[:, 9]),
+    "[~%.3f] SSS 100x300" % np.mean(scores_sentence_space_glove_h100[:, 9]),
+    "[~%.3f] SSS 200x300" % np.mean(scores_sentence_space_glove[:, 9])
 ]
 
 ax[1].plot(gaussian_filter1d(scores_sentence_space_glove_h50[:, 9], 20), c="blue", label=labels[0])
@@ -71,12 +71,13 @@ ax[1].plot(gaussian_filter1d(scores_sentence_space_glove[:, 9], 20), c="red", la
 ax[1].grid(ls=":", c=(0.7, 0.7, 0.7))
 ax[1].spines[['right', 'top']].set_visible(False)
 ax[1].set_xlabel("number of processed chunks")
-ax[1].set_ylabel("balanced accuracy score")
+ax[1].set_ylabel("BAC")
 ax[1].set_ylim(.5, 1.)
 ax[1].set_xlim(0, 2500)
-ax[1].set_title("Preliminary review")
+ax[1].set_title("Image size ablation")
 ax[1].legend(frameon=False, ncol=1)
 
 plt.tight_layout()
 plt.savefig('foo.png')
 plt.savefig("figures/0_preliminary.png", dpi=200)
+plt.savefig("figures/0_preliminary.eps", dpi=200)

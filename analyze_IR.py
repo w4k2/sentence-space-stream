@@ -50,7 +50,7 @@ fig, ax = plt.subplots(1, 1, figsize=(10, 5))
 
 ax.plot(gaussian_filter1d(irs[0], 3), label="True", c="blue")
 ax.plot(gaussian_filter1d(irs[1], 3), label="Fake", c="red")
-ax.set_xlabel("chunks")
+ax.set_xlabel("number of processed chunks")
 ax.set_ylabel("Prior class probability")
 ax.legend(frameon=False)
 ax.grid(ls=":", c=(0.7, 0.7, 0.7))
@@ -59,3 +59,4 @@ ax.set_ylim(0, 1)
 
 plt.tight_layout()
 plt.savefig("figures/prior.png", dpi=200)
+plt.savefig("figures/prior.eps", dpi=200)

@@ -7,11 +7,15 @@ from tabulate import tabulate
 # matplotlib.rcParams.update({'font.size': 16, "font.family" : "monospace"})
 
 # CHUNKS x METRICS
-scores_sentence_space_glove = np.load("results/scores_sentence_space_glove_imgfixed.npy")
+scores_sentence_space_glove = np.load("results/scores_sentence_space_glove_classes_fixed.npy")
 # METHODS x CHUNKS x METRICS
-scores_ref = np.load("results/scores_MiniLM_2c.npy")
+scores_ref = np.load("results/scores_MiniLM_classes_fixed.npy")
+
+# print(scores_ref.shape)
+# exit()
+
 # METHODS x CHUNKS x METRICS
-scores = np.concatenate((scores_ref, scores_sentence_space_glove.reshape(1, 2730, 10)[:, :2727]), axis=0)
+scores = np.concatenate((scores_ref[:, :2727], scores_sentence_space_glove.reshape(1, 2730, 10)[:, :2727]), axis=0)
 
 # Unique metrics
 scores = scores[:, :, [1, 3, 4, 5, 6, 7, 9]]
@@ -30,7 +34,7 @@ colors = ['silver', 'darkorange', 'seagreen', 'darkorchid', 'dodgerblue', 'red']
 lws = [1.5, 1.5, 1.5 ,1.5 ,1.5 ,1.5]
 lss = ["-", "-", "-", "-", "-", "-"]
 
-metrics=["recall", "precision", "specificity", "f1_score", "gmean_1", "gmean_2", "bac"]
+metrics=["recall", "precision", "specificity", "f$_1$ score", "Gmean", "Gmean$_s$", "BAC"]
 
 mean_scores = np.concatenate((mean_scores, mean_scores[:, :1]), axis=1)
 
@@ -86,5 +90,6 @@ for llo, lla in zip(label_loc*step, metrics):
 
 plt.tight_layout()
 # plt.title("Mean metric values", fontsize=17, x=0.5, y=1.07)
-plt.savefig("figures/4_radar.png", dpi=200)
+plt.savefig("figures/4_radar.png", dpi=300)
+plt.savefig("figures/4_radar.eps", dpi=200)
 plt.savefig('foo.png')

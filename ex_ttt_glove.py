@@ -21,14 +21,14 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 X = np.load("fakeddit_stream/fakeddit_posts.npy", allow_pickle=True)
 bias = np.load("fakeddit_stream/fakeddit_posts_y.npy")
 # How many classes?
-bias_id = 1
+bias_id = 0
 print(X.shape)
 print(bias.shape)
 
 # Only titles, without timestamp
 # Binary problem
 stream = X[:, 0]
-y = np.array([1,0])[bias[:,bias_id]] if bias_id == 0 else bias[:,bias_id]
+y = np.array([0,1])[bias[:,bias_id]] if bias_id == 0 else bias[:,bias_id]
 
 chunk_size = 250
 # All chunks
@@ -42,11 +42,11 @@ metrics=(recall, recall_score, precision, precision_score, specificity, f1_score
 
 n_estimators = 10
 methods = [
-        HoeffdingTree(split_criterion="hellinger"),
-        CDS(HoeffdingTree(split_criterion="hellinger"), n_estimators),
+        # HoeffdingTree(split_criterion="hellinger"),
+        # CDS(HoeffdingTree(split_criterion="hellinger"), n_estimators),
         # NIE(HoeffdingTree(split_criterion="hellinger"), n_estimators),
         KUE(HoeffdingTree(split_criterion="hellinger"), n_estimators),
-        ROSE(HoeffdingTree(split_criterion="hellinger"), n_estimators),
+        # ROSE(HoeffdingTree(split_criterion="hellinger"), n_estimators),
     ]
 
 # model = SentenceTransformer('all-MiniLM-L6-v2', device="mps").to("mps")
@@ -98,4 +98,4 @@ for chunk_id in tqdm(range(n_chunks)):
             except:
                 scores[method_id, chunk_id, metric_id] = np.nan
 
-np.save("results/scores_glove_3c", scores)
+np.save("results/scores_glove_kue", scores)

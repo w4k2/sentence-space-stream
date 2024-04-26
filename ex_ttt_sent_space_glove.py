@@ -25,7 +25,7 @@ print(bias.shape)
 # Only titles, without timestamp
 # Binary problem
 stream = X[:, 0]
-y = np.array([1,0])[bias[:,bias_id]] if bias_id == 0 else bias[:,bias_id]
+y = np.array([0,1])[bias[:,bias_id]] if bias_id == 0 else bias[:,bias_id]
 print(np.unique(y, return_counts=True))
 
 chunk_size = 250
@@ -139,4 +139,4 @@ for chunk_id in tqdm(range(n_chunks)):
                 loss.backward()
                 optimizer.step()
 results = np.array(results)
-np.save("results/scores_sentence_space_glove_imgfixed_200_notransfer", results)
+np.save("results/scores_sentence_space_glove_classes_fixed", results)
