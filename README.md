@@ -1,0 +1,1 @@
+# Employing Sentence Space Embedding for Classification of Data Stream from Fake News Domain
