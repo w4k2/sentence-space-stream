@@ -45,7 +45,7 @@ for chunk_id in tqdm(range(n_chunks)):
     irs[1, chunk_id] = counts[1]/sum
 
 
-fig, ax = plt.subplots(1, 1, figsize=(10, 5))
+fig, ax = plt.subplots(1, 1, figsize=(10, 4))
 
 
 ax.plot(gaussian_filter1d(irs[0], 3), label="True", c="blue")
@@ -58,5 +58,5 @@ ax.spines[['right', 'top']].set_visible(False)
 ax.set_ylim(0, 1)
 
 plt.tight_layout()
-plt.savefig("figures/prior.png", dpi=200)
-plt.savefig("figures/prior.eps", dpi=200)
+plt.savefig("figures/prior.png", dpi=200, bbox_inches='tight')
+plt.savefig("figures/prior.eps", dpi=200, bbox_inches='tight')

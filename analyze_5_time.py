@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 
-# matplotlib.rcParams.update({'font.size': 16, "font.family" : "monospace"})
+matplotlib.rcParams.update({'font.size': 14, "font.family" : "monospace"})
 
 # REPLICATION x METHODS x CHUNKS x (EXTRACTION, TEST, TRAIN)
 time_ref = np.load("results/time_complexity_ref.npy")
@@ -24,7 +24,7 @@ lws = [1.5, 1.5, 1.5 ,1.5 ,1.5 ,1.5]
 lss = ["-", "-", "-", "-", "-", "-"]
 axis_titles = ["Extraction", "Testing", "Training", 'Accumulated time']
 
-fig, ax = plt.subplots(2, 2, figsize=(12, 12*.618))
+fig, ax = plt.subplots(2, 2, figsize=(12, 11*.618))
 ax = ax.ravel()
 for axis in range(3):
     for method_id, method in enumerate(methods):
@@ -32,7 +32,8 @@ for axis in range(3):
 
         ax[axis].set_xlabel("number of processed chunks")
         ax[axis].set_ylabel("log of computation time [s]")
-        ax[axis].legend(frameon=False, loc="upper right", ncol=2)
+        if axis == 0:
+            ax[axis].legend(frameon=False, loc="upper right", ncol=3)
         ax[axis].grid(ls=":", c=(0.7, 0.7, 0.7))
         ax[axis].set_title("%s" % axis_titles[axis])
         ax[axis].set_yscale('log')
@@ -46,7 +47,7 @@ ax[3].bar(methods, np.mean(times[:, 10:, 2], axis=1), color="blue", bottom=np.me
 # ax[3].set_yscale('log')
 ax[3].set_ylabel("computation time [s]")
 # ax[3].set_ylim(1e-1, 1e1)
-ax[3].legend(frameon=False)
+ax[3].legend(frameon=False, loc="upper left")
 ax[3].grid(ls=":", c=(0.7, 0.7, 0.7))
 ax[3].set_title(axis_titles[-1])
 
@@ -55,6 +56,6 @@ for aa in ax.ravel():
     aa.spines['right'].set_visible(False)
 
 plt.tight_layout()
-plt.savefig("figures/5_time.png", dpi=200)
-plt.savefig("figures/5_time.eps", dpi=200)
+plt.savefig("figures/5_time.png", dpi=200, bbox_inches='tight')
+plt.savefig("figures/5_time.eps", dpi=200, bbox_inches='tight')
 plt.savefig('foo.png')

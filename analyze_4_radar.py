@@ -4,7 +4,7 @@ import matplotlib
 from tabulate import tabulate
 
 
-# matplotlib.rcParams.update({'font.size': 16, "font.family" : "monospace"})
+matplotlib.rcParams.update({'font.size': 13, "font.family" : "monospace"})
 
 # CHUNKS x METRICS
 scores_sentence_space_glove = np.load("results/scores_sentence_space_glove_classes_fixed.npy")
@@ -60,7 +60,7 @@ plt.ylim(0,1)
 
 gpoints = np.linspace(0,1,6)
 plt.gca().set_yticks(gpoints)
-plt.legend(loc=(0.9, -0.1), frameon=False)
+plt.legend(loc=(1.07, .3), frameon=False)
 
 ax.grid(lw=0)
 ax.set_xticks(label_loc[:-1])
@@ -90,6 +90,6 @@ for llo, lla in zip(label_loc*step, metrics):
 
 plt.tight_layout()
 # plt.title("Mean metric values", fontsize=17, x=0.5, y=1.07)
-plt.savefig("figures/4_radar.png", dpi=300)
-plt.savefig("figures/4_radar.eps", dpi=200)
+plt.savefig("figures/4_radar.png", dpi=300, bbox_inches='tight')
+plt.savefig("figures/4_radar.eps", dpi=200, bbox_inches='tight')
 plt.savefig('foo.png')
